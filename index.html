@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Bloom for You – Sept 25</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --accent:#ffb703;
+      --petal-start:#f4b7c7; /* softer blush */
+      --petal-end:#c4002b;   /* deep red after bloom */
+      --bud:#9b0020;
+      --stem:#2d8a34;
+      --leaf:#1f6e2a;
+      --text:#f5f7ff;
+    }
+    html,body{height:100%;}
+    body{
+      margin:0; display:grid; place-items:center;
+      min-height:100vh; min-height:100svh; min-height:100dvh;
+      background:radial-gradient(1200px 800px at 50% 20%, #17203a 0%, var(--bg) 60%);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans";
+      color:var(--text);
+      -webkit-text-size-adjust: 100%;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      overflow:hidden;
+    }
+    .stage{
+      position:relative;
+      width:clamp(320px, 92vw, 760px);
+      height:min(92vh, 92svh, 92dvh);
+      display:grid; place-items:center;
+    }
+    svg{ width:100%; height:100%; shape-rendering:geometricPrecision; filter: drop-shadow(0 10px 18px rgba(0,0,0,.45)); }
+
+    /* Petals are hidden & tiny BEFORE bloom */
+    .petal{ transform-origin: 375px 430px; transform: scale(.02) rotate(var(--rot)); opacity:0; will-change: transform, opacity; }
+    .petal .fill{ fill: var(--petal-start); }
+
+    @keyframes bloomScale {
+      0%   { transform: scale(.05) rotate(var(--rot)); }
+      60%  { transform: scale(1.06) rotate(var(--rot)); }
+      80%  { transform: scale(.98)  rotate(var(--rot)); }
+      100% { transform: scale(1)    rotate(var(--rot)); }
+    }
+    @keyframes colorShift {
+      0%   { fill: var(--petal-start); }
+      70%  { fill: #e3003a; }
+      100% { fill: var(--petal-end); }
+    }
+    .bloom .petal{ animation: bloomScale 1900ms cubic-bezier(.22,.66,.2,1.05) var(--delay) both; opacity:1; }
+    .bloom .petal .fill{ animation: colorShift 2200ms ease-in-out var(--delay) both; }
+
+    /* center glow */
+    @keyframes glow {
+      0%{ r:10; opacity:.0; }
+      50%{ r:38; opacity:.85; }
+      100%{ r:26; opacity:.6; }
+    }
+    #centerGlow { opacity:0; }
+    /* sepals fold back after bloom */
+    #sepals{ transform-origin: 375px 430px; }
+    @keyframes sepalOpen { to { transform: translateY(10px) scale(1.15) rotate(160deg); opacity:.35; } }
+    .bloom #sepals{ animation: sepalOpen 900ms ease-out 600ms both; }
+
+    /* fade bud body away before hiding */
+    #budBody{ opacity:1; transition: opacity 450ms ease 450ms; }
+    .bloom #budBody{ opacity:0; }
+    .bloom #centerGlow { animation: glow 2000ms ease-out 600ms both; }
+
+    /* message reveal */
+    .message{ position:absolute; left:0; right:0; bottom:calc(6% + env(safe-area-inset-bottom, 0px)); text-align:center; opacity:0; transform: translateY(8px); letter-spacing:.3px; padding-inline: clamp(8px, 4vw, 24px); }
+    .message.show{ transition: opacity 800ms ease, transform 800ms ease; opacity:1; transform:none; }
+    .message .line1{ font-weight:700; font-size: clamp(18px, 5vw, 30px); }
+    .message .line2{ margin-top:.35rem; font-weight:500; opacity:.9; font-size: clamp(14px, 3.2vw, 18px); }
+
+    .hint{ position: absolute; top: max(10px, env(safe-area-inset-top, 0px)); right:12px; font-size:12px; opacity:.55; user-select:none }
+    .hint kbd{ padding:.1em .4em; border:1px solid #ffffff33; border-bottom-width:2px; border-radius:6px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+    /* subtle twinkle background */
+    .stars{ position:absolute; inset:0; pointer-events:none; opacity:.18 }
+    .stars span{ position:absolute; width:2px; height:2px; background:white; border-radius:50%; animation: twinkle 4s ease-in-out infinite; }
+    @keyframes twinkle{ 50%{ transform:scale(1.8); opacity:.4 } }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="hint" id="hint">(Testing?) Add <kbd>?force=1</kbd> to URL to preview bloom.</div>
+
+    <!-- decorative stars -->
+    <div class="stars" aria-hidden="true" id="stars"></div>
+
+    <svg viewBox="0 0 750 850" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Blooming red rose">
+      <!-- stem & leaves -->
+      <g id="stem" transform="translate(375,430)">
+        <path d="M0 0 C -5 100, 8 190, 0 340" fill="none" stroke="var(--stem)" stroke-width="7" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+        <!-- left leaf -->
+        <g transform="translate(-14,160) rotate(-28)">
+          <path d="M0 0 C 40 -12, 70 22, 0 56 C -54 30, -18 14, 0 0 Z" fill="var(--leaf)"/>
+          <path d="M0 0 C 10 14, 12 28, 0 56" fill="none" stroke="#14481d" stroke-width="2" vector-effect="non-scaling-stroke"/>
+        </g>
+        <!-- right leaf -->
+        <g transform="translate(12,240) rotate(36)">
+          <path d="M0 0 C 42 -10, 68 26, 0 58 C -50 32, -16 12, 0 0 Z" fill="var(--leaf)"/>
+          <path d="M0 0 C 10 16, 10 30, 0 58" fill="none" stroke="#14481d" stroke-width="2" vector-effect="non-scaling-stroke"/>
+        </g>
+      </g>
+
+      <!-- flower group -->
+      <g id="flower">
+        <!-- petals built from a single base path, rotated around center -->
+        <defs>
+          <path id="petalPath" d="M375 430 C 412 404, 430 368, 375 308 C 320 368, 338 404, 375 430 Z"/>
+        </defs>
+
+        <!-- outer ring (12 petals) -->
+        <g id="outer"></g>
+          <g class="petal" style="--rot:30deg; --delay:60ms"> <use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:60deg; --delay:120ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:90deg; --delay:180ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:120deg; --delay:240ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:150deg; --delay:300ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:180deg; --delay:360ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:210deg; --delay:420ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:240deg; --delay:480ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:270deg; --delay:540ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:300deg; --delay:600ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:330deg; --delay:660ms"><use href="#petalPath" class="fill"/></g>
+        </g>
+
+        <!-- inner ring (6 petals, slightly smaller) -->
+        <g id="inner"></g>
+        <!-- mid ring (auto) -->
+        <g id="mid"></g>
+          <g class="petal" style="--rot:60deg; --delay:260ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:120deg; --delay:320ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:180deg; --delay:380ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:240deg; --delay:440ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:300deg; --delay:500ms"><use href="#petalPath" class="fill"/></g>
+        </g>
+
+        <!-- closed bud overlay (visible before bloom) -->
+        <g id="bud">
+          <!-- green sepals hugging the base so the closed state looks natural -->
+          <g id="sepals" fill="var(--leaf)" stroke="#14481d" stroke-width="2" vector-effect="non-scaling-stroke">
+            <path d="M375 442 C 360 438, 350 430, 345 415 C 365 424, 370 420, 375 418 Z"/>
+            <path d="M375 442 C 390 438, 400 430, 405 415 C 385 424, 380 420, 375 418 Z"/>
+            <path d="M375 444 C 372 448, 370 456, 375 462 C 380 456, 378 448, 375 444 Z"/>
+          </g>
+          <!-- deep red bud body (hidden after bloom, sepals remain) -->
+          <g id="budBody">
+            <path d="M375 430 C 395 413, 416 385, 375 338 C 334 385, 355 413, 375 430 Z" fill="var(--bud)"/>
+            <!-- inner fold -->
+            <path d="M375 433 C 404 420, 412 400, 375 345" fill="none" stroke="#7a001a" stroke-width="3" vector-effect="non-scaling-stroke"/>
+            <path d="M375 433 C 346 420, 338 400, 375 345" fill="none" stroke="#7a001a" stroke-width="3" vector-effect="non-scaling-stroke"/>
+            <!-- soft highlight -->
+            <ellipse cx="364" cy="395" rx="14" ry="20" fill="#ffffff22"/>
+          </g>
+        </g>
+
+        <!-- center glow & seeds -->
+        <circle id="centerGlow" cx="375" cy="430" r="26" fill="url(#gold)" opacity="0"></circle>
+        <defs>
+          <radialGradient id="gold" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#ffe08a"/>
+            <stop offset="70%" stop-color="var(--accent)"/>
+            <stop offset="100%" stop-color="#b07200"/>
+          </radialGradient>
+        </defs>
+      </g>
+    </svg>
+
+    <div class="message" id="msg" aria-live="polite">
+      <div class="line1">It bloomed for you. 🌹</div>
+      <div class="line2">It’s not about the ground we stand on — it’s about the horizon we’re heading toward.</div>
+    </div>
+  </div>
+
+  <script>
+    function todayInRiyadh(){
+      const now = new Date();
+      const parts = new Intl.DateTimeFormat('en-GB', { timeZone:'Asia/Riyadh', year:'numeric', month:'2-digit', day:'2-digit' }).formatToParts(now);
+      const y = parts.find(p=>p.type==='year').value;
+      const m = parts.find(p=>p.type==='month').value;
+      const d = parts.find(p=>p.type==='day').value;
+      return { y: +y, m: +m, d: +d };
+    }
+
+    (function makeStars(){
+      const box = document.getElementById('stars');
+      const n = 80;
+      for(let i=0;i<n;i++){
+        const s = document.createElement('span');
+        s.style.left = Math.random()*100 + '%';
+        s.style.top  = Math.random()*100 + '%';
+        s.style.animationDelay = (Math.random()*4)+'s';
+        box.appendChild(s);
+      }
+    })();
+
+    // smoother, rounder rings with subtle jitter to avoid a "gear" outline
+    function createRing(groupId, count, delayStart, scale=1, yOffset=0, jitterDeg=1.2){
+      const NS='http://www.w3.org/2000/svg';
+      const XLNS='http://www.w3.org/1999/xlink';
+      const g = document.getElementById(groupId);
+      // scale around the flower center (375,430), then nudge on Y
+      g.setAttribute('transform', `translate(0,${yOffset}) translate(375,430) scale(${scale}) translate(-375,-430)`);
+      for(let i=0;i<count;i++){
+        const pet = document.createElementNS(NS, 'g');
+        pet.setAttribute('class','petal');
+        // small rotation jitter for organic edge
+        const golden = 2.399963229728653; // ~137.5° in radians factor for pseudo randomness
+        const jitter = Math.sin((i+1)*golden) * jitterDeg;
+        const rot = (360/count)*i + jitter;
+        pet.style.setProperty('--rot', rot + 'deg');
+        pet.style.setProperty('--delay', (delayStart + i*45) + 'ms');
+        const use = document.createElementNS(NS, 'use');
+        use.setAttribute('href','#petalPath');
+        use.setAttributeNS(XLNS, 'xlink:href', '#petalPath'); // Safari fallback
+        use.setAttribute('class','fill');
+        pet.appendChild(use);
+        g.appendChild(pet);
+      }
+    }) scale(${scale})`);
+      for(let i=0;i<count;i++){
+        const pet = document.createElementNS(NS, 'g');
+        pet.setAttribute('class','petal');
+        const golden = 2.399963229728653;
+        const jitter = Math.sin((i+1)*golden) * jitterDeg;
+        const rot = (360/count)*i + jitter;
+        pet.style.setProperty('--rot', rot + 'deg');
+        pet.style.setProperty('--delay', (delayStart + i*45) + 'ms');
+        const use = document.createElementNS(NS, 'use');
+        use.setAttribute('href','#petalPath');
+        use.setAttributeNS(XLNS, 'xlink:href', '#petalPath');
+        use.setAttribute('class','fill');
+        pet.appendChild(use);
+        g.appendChild(pet);
+      }
+    }
+
+    const $stage  = document.querySelector('.stage');
+    const $budBody = document.getElementById('budBody');
+    const $msg    = document.getElementById('msg');
+
+    function startBloom(){
+      $stage.classList.add('bloom');
+      setTimeout(()=>{ $budBody && ($budBody.style.display='none'); }, 950);
+      const longest = 2300;
+      setTimeout(()=>{ $msg.classList.add('show'); }, longest);
+    }
+
+    (function init(){
+      // Bigger, more realistic flower: more petals and larger outer radius
+      createRing('outer', 26,   0, 1.32,  -4, 1.4);
+      createRing('mid',   20, 180, 1.12,  -8, 1.2);
+      createRing('inner', 14, 320, 0.96, -12, 1.0);
+
+      const params = new URLSearchParams(location.search);
+      const force  = params.get('force') === '1' || params.get('debug') === '1';
+
+      const {m, d} = todayInRiyadh();
+      const isSept25 = (m === 9 && d === 25);
+
+      if(isSept25 || force){
+        startBloom();
+        const hint = document.getElementById('hint');
+        if(force && hint){ hint.textContent = 'Preview mode (force=1) — bloom triggered for testing.'; }
+        else if(hint){ hint.remove(); }
+      } else {
+        const hint = document.getElementById('hint');
+        if(hint){ hint.textContent = 'The rose will bloom on Sept 25 (Asia/Riyadh). Use ?force=1 to test.'; }
+      }
+
+      $msg.addEventListener('transitionend', (e)=>{
+        if(e.propertyName === 'opacity' && $msg.classList.contains('show')){
+          $msg.setAttribute('aria-label','The rose has bloomed and a message is displayed.');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
