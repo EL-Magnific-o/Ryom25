@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bloom for You – Sept 25</title>
+  <style>
+    :root{
+      --bg:#0b1020;          /* deep night blue */
+      --accent:#ffb703;      /* warm gold */
+      --petal-start:#ff9ab0; /* soft pink at start */
+      --petal-end:#c4002b;   /* deep red after bloom */
+      --bud:#9b0020;
+      --stem:#2d8a34;
+      --leaf:#1f6e2a;
+      --text:#f5f7ff;
+    }
+    html,body{height:100%;}
+    body{
+      margin:0; display:grid; place-items:center; height:100%; background:radial-gradient(1200px 800px at 50% 20%, #17203a 0%, var(--bg) 60%);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      color:var(--text);
+      overflow:hidden;
+    }
+    .stage{
+      position:relative; width:min(92vw, 740px); aspect-ratio:1/1; display:grid; place-items:center;
+    }
+    svg{ width:100%; height:100%; filter: drop-shadow(0 10px 18px rgba(0,0,0,.45)); }
+
+    /* Petal animation */
+    .petal{ transform-origin: 375px 430px; /* center of flower group */ }
+    .petal .fill{ fill: var(--petal-start); }
+
+    @keyframes bloomScale {
+      0%   { transform: scale(.05) rotate(var(--rot)); }
+      60%  { transform: scale(1.06) rotate(calc(var(--rot) + .8deg)); }
+      80%  { transform: scale(.98)  rotate(calc(var(--rot) - .6deg)); }
+      100% { transform: scale(1)    rotate(var(--rot)); }
+    }
+    @keyframes colorShift {
+      0%   { fill: var(--petal-start); }
+      70%  { fill: #e3003a; }
+      100% { fill: var(--petal-end); }
+    }
+    .bloom .petal{ animation: bloomScale 1900ms cubic-bezier(.22,.66,.2,1.05) var(--delay) both; }
+    .bloom .petal .fill{ animation: colorShift 2200ms ease-in-out var(--delay) both; }
+
+    /* center glow */
+    @keyframes glow {
+      0%{ r:10; opacity:.0; }
+      50%{ r:38; opacity:.85; }
+      100%{ r:26; opacity:.6; }
+    }
+    .bloom #centerGlow { animation: glow 2000ms ease-out 600ms both; }
+
+    /* message reveal */
+    .message{ position:absolute; inset:auto 0 6%; text-align:center; opacity:0; transform: translateY(8px); letter-spacing:.3px; }
+    .message.show{ transition: opacity 800ms ease, transform 800ms ease; opacity:1; transform:none; }
+    .message .line1{ font-weight:700; font-size: clamp(18px, 4vw, 28px); }
+    .message .line2{ margin-top:.35rem; font-weight:500; opacity:.9; font-size: clamp(14px, 3.2vw, 18px); }
+
+    .hint{ position: absolute; top:10px; right:12px; font-size:12px; opacity:.55; user-select:none }
+    .hint kbd{ padding:.1em .4em; border:1px solid #ffffff33; border-bottom-width:2px; border-radius:6px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+    /* subtle twinkle background */
+    .stars{ position:absolute; inset:0; pointer-events:none; opacity:.18 }
+    .stars span{ position:absolute; width:2px; height:2px; background:white; border-radius:50%; animation: twinkle 4s ease-in-out infinite; }
+    @keyframes twinkle{ 50%{ transform:scale(1.8); opacity:.4 } }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="hint" id="hint">(Testing?) Add <kbd>?force=1</kbd> to URL to preview bloom.</div>
+
+    <!-- decorative stars -->
+    <div class="stars" aria-hidden="true" id="stars"></div>
+
+    <svg viewBox="0 0 750 850" role="img" aria-label="Blooming red rose">
+      <!-- stem & leaves -->
+      <g id="stem" transform="translate(375,520)">
+        <path d="M0 0 C -5 80, 8 150, 0 290" fill="none" stroke="var(--stem)" stroke-width="7" stroke-linecap="round"/>
+        <!-- left leaf -->
+        <g transform="translate(-14,140) rotate(-28)">
+          <path d="M0 0 C 40 -12, 70 22, 0 56 C -54 30, -18 14, 0 0 Z" fill="var(--leaf)"/>
+          <path d="M0 0 C 10 14, 12 28, 0 56" fill="none" stroke="#14481d" stroke-width="2"/>
+        </g>
+        <!-- right leaf -->
+        <g transform="translate(12,220) rotate(36)">
+          <path d="M0 0 C 42 -10, 68 26, 0 58 C -50 32, -16 12, 0 0 Z" fill="var(--leaf)"/>
+          <path d="M0 0 C 10 16, 10 30, 0 58" fill="none" stroke="#14481d" stroke-width="2"/>
+        </g>
+      </g>
+
+      <!-- flower group -->
+      <g id="flower" transform="translate(0,-30)">
+        <!-- petals built from a single base path, rotated around center -->
+        <defs>
+          <path id="petalPath" d="M375 350 C 420 330, 440 300, 375 230 C 310 300, 330 330, 375 350 Z"/>
+        </defs>
+
+        <!-- outer ring (12 petals) -->
+        <g id="outer">
+          <!-- generated manually with increments of 30deg -->
+          <g class="petal" style="--rot:0deg; --delay:0ms">  <use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:30deg; --delay:60ms"> <use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:60deg; --delay:120ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:90deg; --delay:180ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:120deg; --delay:240ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:150deg; --delay:300ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:180deg; --delay:360ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:210deg; --delay:420ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:240deg; --delay:480ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:270deg; --delay:540ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:300deg; --delay:600ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:330deg; --delay:660ms"><use href="#petalPath" class="fill"/></g>
+        </g>
+
+        <!-- inner ring (6 petals, slightly smaller) -->
+        <g id="inner" transform="translate(0,-10) scale(.92)">
+          <g class="petal" style="--rot:0deg; --delay:200ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:60deg; --delay:260ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:120deg; --delay:320ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:180deg; --delay:380ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:240deg; --delay:440ms"><use href="#petalPath" class="fill"/></g>
+          <g class="petal" style="--rot:300deg; --delay:500ms"><use href="#petalPath" class="fill"/></g>
+        </g>
+
+        <!-- closed bud overlay (visible before bloom) -->
+        <g id="bud" transform="translate(0,-6)">
+          <path d="M375 320 C 390 305, 405 285, 375 255 C 345 285, 360 305, 375 320 Z" fill="var(--bud)"/>
+          <path d="M375 330 C 410 315, 420 300, 375 250" fill="none" stroke="#7a001a" stroke-width="3"/>
+          <path d="M375 330 C 340 315, 330 300, 375 250" fill="none" stroke="#7a001a" stroke-width="3"/>
+        </g>
+
+        <!-- center glow & seeds -->
+        <circle id="centerGlow" cx="375" cy="430" r="26" fill="url(#gold)"></circle>
+        <defs>
+          <radialGradient id="gold" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#ffe08a"/>
+            <stop offset="70%" stop-color="var(--accent)"/>
+            <stop offset="100%" stop-color="#b07200"/>
+          </radialGradient>
+        </defs>
+      </g>
+    </svg>
+
+    <div class="message" id="msg" aria-live="polite">
+      <div class="line1">It bloomed for you. 🌹</div>
+      <div class="line2">It’s not about the ground we stand on — it’s about the horizon we’re heading toward.</div>
+    </div>
+  </div>
+
+  <script>
+    // Utility: today in Asia/Riyadh no matter user's device timezone
+    function todayInRiyadh(){
+      const now = new Date();
+      const parts = new Intl.DateTimeFormat('en-GB', { timeZone:'Asia/Riyadh', year:'numeric', month:'2-digit', day:'2-digit' }).formatToParts(now);
+      const y = parts.find(p=>p.type==='year').value;
+      const m = parts.find(p=>p.type==='month').value;
+      const d = parts.find(p=>p.type==='day').value;
+      return { y: +y, m: +m, d: +d };
+    }
+
+    // Decorative stars
+    (function makeStars(){
+      const box = document.getElementById('stars');
+      const n = 80; // small
+      for(let i=0;i<n;i++){
+        const s = document.createElement('span');
+        s.style.left = Math.random()*100 + '%';
+        s.style.top  = Math.random()*100 + '%';
+        s.style.animationDelay = (Math.random()*4)+'s';
+        box.appendChild(s);
+      }
+    })();
+
+    const $stage  = document.querySelector('.stage');
+    const $flower = document.getElementById('flower');
+    const $bud    = document.getElementById('bud');
+    const $msg    = document.getElementById('msg');
+
+    function startBloom(){
+      // start animations
+      $stage.classList.add('bloom');
+      // reveal petals by removing bud after delay
+      setTimeout(()=>{ $bud.style.display='none'; }, 900);
+      // show message at the end
+      const longest = 2300; // ms, slightly longer than the petal colorShift
+      setTimeout(()=>{ $msg.classList.add('show'); }, longest);
+    }
+
+    (function init(){
+      const params = new URLSearchParams(location.search);
+      const force  = params.get('force') === '1' || params.get('debug') === '1';
+
+      const {m, d} = todayInRiyadh();
+      const isSept25 = (m === 9 && d === 25);
+
+      if(isSept25 || force){
+        startBloom();
+        if(force){
+          document.getElementById('hint').textContent = 'Preview mode (force=1) — bloom triggered for testing.';
+        } else {
+          document.getElementById('hint').remove();
+        }
+        // Ensure petals exist (progressive enhancement, already in DOM)
+      } else {
+        // Not the day yet — keep the bud, petals stay small (no .bloom class)
+        document.getElementById('hint').textContent = 'The rose will bloom on Sept 25 (Asia/Riyadh). Use ?force=1 to test.';
+      }
+
+      // Accessibility: announce when the bloom finishes
+      $msg.addEventListener('transitionend', (e)=>{
+        if(e.propertyName === 'opacity' && $msg.classList.contains('show')){
+          $msg.setAttribute('aria-label','The rose has bloomed and a message is displayed.');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
